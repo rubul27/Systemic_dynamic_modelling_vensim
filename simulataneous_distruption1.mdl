@@ -1,0 +1,601 @@
+{UTF-8}
+Supplier planned supply quantity=
+	SMOOTH( Manufacturer planned production quantity,Supplier smooth time ) - SMOOTH( Manufacturer planned production quantity\
+		,Supplier smooth time )*IF THEN ELSE(Time >= 72:AND: Time < 110, 0.25, 0)
+	~	thousand units/Week
+	~		|
+
+Manufacturer shipping capacity=
+	Manufacturer vehicle volume*Vehicle capacity 2*unit conversion* IF THEN ELSE(Time >=\
+		 72 :AND: Time < 110, 0.75, 1)
+	~	thousand units/Week
+	~		|
+
+Vehicle volume adjustment=
+	IF THEN ELSE(Time >= 50 :AND: Time < 60, 0.35, 0)
+	~	car
+	~	thousand units/Week
+	|
+
+Customer received quantity=
+	MIN(Retailer sales quantity, Retailer shipping capacity)
+	~	thousand units/Week
+	~		|
+
+Retailer shipping capacity=
+	Retailer vehicle volume*Vehicle capacity 4*unit conversion
+	~	thousand units/Week
+	~		|
+
+Supplier vehicle volume=
+	RANDOM UNIFORM(15, 20 , 2000 ) - RANDOM UNIFORM(15, 20 , 2000 )*Vehicle volume adjustment
+	~	car
+	~		|
+
+Distributor Customer received quantity=
+	MIN(Distributor distribute quantity, Distributor shipping capacity )
+	~	thousand units/Week
+	~		|
+
+Supplier shipping capacity=
+	Supplier vehicle volume*Vehicle capacity 1*unit conversion
+	~	thousand units/Week
+	~		|
+
+Inventory Adjustment=
+	IF THEN ELSE(Time >= 50 :AND: Time < 60, 0.35, 0)
+	~	thousand units/Week
+	~		|
+
+Manufacturer production quantity=
+	MIN(Manufacturer production capacity, Manufacturer received quantity )
+	~	thousand units/Week
+	~		|
+
+Supplier capacity=
+	RANDOM UNIFORM(30, 60 , 2000 ) - RANDOM UNIFORM(30, 60 , 2000 )*Inventory Adjustment
+	~	thousand units/Week
+	~		|
+
+Manufacturer received quantity=
+	MIN(Supplier supply quantity, Supplier shipping capacity)
+	~	thousand units/Week
+	~		|
+
+Distributor shipping capacity=
+	Distributor vehicle volume*Vehicle capacity 3*unit conversion
+	~	thousand units/Week
+	~		|
+
+Average market demand=
+	50
+	~	thousand units/Week
+	~		|
+
+Market Demand=
+	Average market demand + STEP(RANDOM NORMAL(-1*SD, 1*SD , 0 , SD , 2024 ),4)
+	~	thousand units/Week
+	~	Average Demand+ 
+		IF THEN ELSE(Time>4, 
+		STEP(
+		RANDOM NORMAL( -3*variability , 3*variability , 0 , \
+		variability^0.5*Average Demand , 2024),0),0)
+	|
+
+Manufacturer production risk=
+	IF THEN ELSE(Manufacturer production quantity>=Manufacturer planned production quantity\
+		,0,(Manufacturer planned production quantity
+	-Manufacturer production quantity)/Manufacturer planned production quantity)
+	~	Dmnl
+	~		|
+
+SD=
+	Average market demand*(variability^0.5)
+	~	thousand units/Week
+	~		|
+
+Retailer actual inventory= INTEG (
+	Retailer received quantity-Retailer sales quantity,
+		20)
+	~	thousand units
+	~		|
+
+Distributor actual inventory= INTEG (
+	Distributor received quantity-Distributor distribute quantity,
+		20)
+	~	thousand units
+	~		|
+
+Distributor distribute quantity=
+	MIN(Distributor actual inventory*unit conversion, Distributor capacity )
+	~	thousand units/Week
+	~		|
+
+Manufacturer supply quantity=
+	MIN(Manufacturer actual inventory*unit conversion, Manufacturer planned production quantity\
+		 )
+	~	thousand units/Week
+	~		|
+
+Distributor risk=
+	0.6*Distributor inventory risk + 0.4*Distributor transport risk
+	~	Dmnl
+	~		|
+
+Distributor received quantity=
+	MIN(Manufacturer shipping capacity, Manufacturer supply quantity )
+	~	thousand units/Week
+	~		|
+
+Supplier supply quantity=
+	MIN(Supplier actual inventory*unit conversion, Supplier planned supply quantity )
+	~	thousand units/Week
+	~		|
+
+Manufacturer transport risk=
+	IF THEN ELSE(Manufacturer supply quantity<=Manufacturer shipping capacity,0,
+	(Manufacturer supply quantity - Manufacturer shipping capacity)/Manufacturer supply quantity\
+		)
+	~	Dmnl
+	~		|
+
+Supplier actual inventory= INTEG (
+	Supplier capacity-Supplier supply quantity,
+		20)
+	~	thousand units
+	~		|
+
+Supplier risk=
+	0.6*Supplier inventory risk + 0.4*Supplier transport risk
+	~	Dmnl
+	~		|
+
+Manufacturer actual inventory= INTEG (
+	Manufacturer production quantity-Manufacturer supply quantity,
+		20)
+	~	thousand units
+	~		|
+
+Vehicle capacity 2=
+	2.5
+	~	thousand units/car
+	~		|
+
+Manufacturer vehicle volume=
+	RANDOM UNIFORM(15, 20 , 2000 )
+	~	car
+	~		|
+
+Distributor expected inventory=
+	55
+	~	thousand units
+	~		|
+
+Distributor inventory risk=
+	IF THEN ELSE(Distributor actual inventory=Distributor expected inventory,0,
+	ABS(Distributor actual inventory-Distributor expected inventory)/Distributor expected inventory\
+		)
+	~	Dmnl
+	~		|
+
+Distributor planned distribute quantity=
+	SMOOTH( Retailer planned sales quantity ,Distributor smooth time )
+	~	thousand units/Week
+	~		|
+
+Distributor capacity=
+	RANDOM UNIFORM(30, 60 , 2000 )
+	~	thousand units/Week
+	~		|
+
+Distributor smooth time=
+	3
+	~	Week
+	~		|
+
+Distributor transport risk=
+	IF THEN ELSE(Distributor distribute quantity<=Distributor shipping capacity,0,
+	(Distributor distribute quantity - Distributor shipping capacity)/Distributor distribute quantity\
+		)
+	~	Dmnl
+	~		|
+
+Vehicle capacity 3=
+	2.5
+	~	thousand units/car
+	~		|
+
+Distributor vehicle volume=
+	RANDOM UNIFORM(15, 20 , 2000 )
+	~	car
+	~		|
+
+Manufacturer expected inventory=
+	55
+	~	thousand units
+	~		|
+
+Manufacturer inventory risk=
+	IF THEN ELSE(Manufacturer actual inventory=Manufacturer expected inventory,0,
+	ABS(Manufacturer actual inventory-Manufacturer expected inventory)/Manufacturer expected inventory\
+		)
+	~	Dmnl
+	~		|
+
+Manufacturer planned production quantity=
+	SMOOTH( Distributor planned distribute quantity,Manufacturer smooth time )
+	~	thousand units/Week
+	~		|
+
+Manufacturer risk=
+	0.3*Manufacturer inventory risk + 0.2*Manufacturer transport risk + 0.5*Manufacturer production risk
+	~	Dmnl
+	~		|
+
+Manufacturer production capacity=
+	RANDOM UNIFORM(30, 60 , 2000 )
+	~	thousand units/Week
+	~		|
+
+Manufacturer smooth time=
+	3
+	~	Week
+	~		|
+
+Vehicle capacity 1=
+	2.5
+	~	thousand units/car
+	~		|
+
+Retailer planned sales quantity=
+	SMOOTH( Market Demand ,smooth time )
+	~	thousand units/Week
+	~		|
+
+Retailer received quantity=
+	Distributor distribute quantity
+	~	thousand units/Week
+	~		|
+
+Retailer sales capacity=
+	RANDOM UNIFORM(30, 60 , 2000 )
+	~	thousand units/Week
+	~		|
+
+Retailer sales quantity=
+	MIN(Retailer actual inventory*unit conversion, Retailer sales capacity )
+	~	thousand units/Week
+	~		|
+
+Supplier expected inventory=
+	55
+	~	thousand units
+	~		|
+
+smooth time=
+	3
+	~	Week
+	~		|
+
+Supplier inventory risk=
+	IF THEN ELSE(Supplier actual inventory=Supplier expected inventory,0,
+	ABS(Supplier actual inventory-Supplier expected inventory)/Supplier expected inventory\
+		)
+	~	Dmnl
+	~		|
+
+Supplier smooth time=
+	3
+	~	Week
+	~		|
+
+Supplier transport risk=
+	IF THEN ELSE(Supplier supply quantity<=Supplier shipping capacity,0,
+	(Supplier supply quantity - Supplier shipping capacity)/Supplier supply quantity)
+	~	Dmnl
+	~		|
+
+expected inventory=
+	55
+	~	thousand units
+	~		|
+
+Retailer inventory risk=
+	IF THEN ELSE(Retailer actual inventory=expected inventory,0,
+	ABS(Retailer actual inventory-expected inventory)/expected inventory)
+	~	Dmnl
+	~		|
+
+Retailer risk=
+	0.3*Retailer inventory risk + 0.2*Retailer transport risk + 0.5*Retailer Sales risk
+	~	Dmnl
+	~		|
+
+Retailer transport risk=
+	IF THEN ELSE(Retailer sales quantity<=Retailer shipping capacity,0,
+	(Retailer sales quantity - Retailer shipping capacity)/Retailer sales quantity)
+	~	Dmnl
+	~		|
+
+Retailer vehicle volume=
+	RANDOM UNIFORM(15, 20 , 2000 )
+	~	car
+	~		|
+
+Retailer Sales risk=
+	IF THEN ELSE(Retailer sales quantity>=Retailer planned sales quantity,0,(Retailer planned sales quantity\
+		-Retailer sales quantity)/Retailer planned sales quantity)
+	~	Dmnl
+	~		|
+
+unit conversion=
+	ABS(1)
+	~	1/Week
+	~		|
+
+variability=
+	0.3
+	~	Dmnl
+	~		|
+
+Vehicle capacity 4=
+	2.5
+	~	thousand units/car
+	~		|
+
+********************************************************
+	.Control
+********************************************************~
+		Simulation Control Parameters
+	|
+
+FINAL TIME  = 156
+	~	Week
+	~	The final time for the simulation.
+	|
+
+INITIAL TIME  = 0
+	~	Week
+	~	The initial time for the simulation.
+	|
+
+SAVEPER  = 
+        TIME STEP
+	~	Week [0,?]
+	~	The frequency with which output is stored.
+	|
+
+TIME STEP  = 1
+	~	Week [0,?]
+	~	The time step for the simulation.
+	|
+
+\\\---/// Sketch information - do not modify anything except names
+V300  Do not put anything below this section - it will be ignored
+*View 1
+$-1--1--1,0,|12||-1--1--1|-1--1--1|-1--1--1|-1--1--1|-1--1--1|96,96,66,2
+10,1,Time,1750,1153,35,16,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|||128-128-128,0,0,0,0,0,0
+10,2,Market Demand,1655,1475,42,29,8,3,0,0,-1,1,0,0,0,0,0,0,0,0
+10,3,variability,1859,1296,46,22,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,4,SD,1679,1241,42,22,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,5,3,4,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+1,6,4,2,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+10,7,Retailer actual inventory,923,1433,67,29,3,3,0,0,-1,0,0,0,0,0,0,0,0,0
+12,8,48,587,1428,10,8,0,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,9,11,8,100,0,0,22,0,192,0,-1--1--1,,1|(646,1428)|
+1,10,11,7,4,0,0,22,0,192,0,-1--1--1,,1|(782,1428)|
+11,11,0,702,1428,6,8,34,3,0,0,1,0,0,0,0,0,0,0,0,0
+10,12,Retailer received quantity,702,1465,78,29,40,3,0,0,-1,0,0,0,0,0,0,0,0,0
+12,13,48,1329,1433,10,8,0,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,14,16,7,100,0,0,22,0,192,0,-1--1--1,,1|(1069,1433)|
+1,15,16,13,4,0,0,22,0,192,0,-1--1--1,,1|(1239,1433)|
+11,16,0,1154,1433,6,8,34,3,0,0,1,0,0,0,0,0,0,0,0,0
+10,17,Retailer sales quantity,1154,1470,62,29,40,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,18,7,16,1,0,0,0,0,192,0,-1--1--1,,1|(1052,1494)|
+10,19,Retailer sales capacity,1399,1479,62,29,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,20,Retailer planned sales quantity,1448,1601,77,29,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,21,19,17,1,0,0,0,0,192,0,-1--1--1,,1|(1286,1507)|
+10,22,Retailer shipping capacity,814,1761,78,29,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,23,Vehicle capacity 4,589,1741,47,29,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,24,Retailer vehicle volume,608,1642,71,29,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,25,23,22,1,0,0,0,0,192,0,-1--1--1,,1|(678,1778)|
+1,26,24,22,1,0,0,0,0,192,0,-1--1--1,,1|(691,1714)|
+10,27,Customer received quantity,930,1607,87,29,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,28,22,27,1,0,0,0,0,192,0,-1--1--1,,1|(846,1674)|
+1,29,17,27,1,0,0,0,0,192,0,-1--1--1,,1|(1050,1549)|
+10,30,unit conversion,728,1610,51,29,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,31,Retailer transport risk,1106,1682,63,29,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,32,17,31,1,0,0,0,0,192,0,-1--1--1,,1|(1101,1567)|
+1,33,22,31,1,0,0,0,0,192,0,-1--1--1,,1|(972,1750)|
+10,34,Retailer Sales risk,1270,1672,44,22,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,35,17,34,1,0,0,0,0,192,0,-1--1--1,,1|(1190,1578)|
+1,36,20,34,1,0,0,0,0,192,0,-1--1--1,,1|(1387,1652)|
+10,37,Retailer risk,1315,1813,62,29,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,38,Retailer inventory risk,1097,1335,63,29,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,39,7,38,1,0,0,0,0,192,0,-1--1--1,,1|(983,1356)|
+10,40,expected inventory,1265,1339,81,29,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,41,40,38,1,0,0,0,0,192,0,-1--1--1,,1|(1180,1296)|
+10,42,Retailer inventory risk,1070,1823,69,29,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|||128-128-128,0,0,0,0,0,0
+1,43,31,37,1,0,0,0,0,192,0,-1--1--1,,1|(1188,1751)|
+1,44,42,37,1,0,0,0,0,192,0,-1--1--1,,1|(1212,1841)|
+1,45,34,37,1,0,0,0,0,192,0,-1--1--1,,1|(1302,1718)|
+1,46,30,17,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+10,47,smooth time,1617,1783,59,22,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,48,47,20,1,0,0,0,0,192,0,-1--1--1,,1|(1528,1745)|
+1,49,2,20,1,0,0,0,0,192,0,-1--1--1,,1|(1576,1572)|
+10,50,Distributor actual inventory,952,804,67,29,3,3,0,0,-1,0,0,0,0,0,0,0,0,0
+12,51,48,616,799,10,8,0,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,52,54,51,100,0,0,22,0,192,0,-1--1--1,,1|(675,799)|
+1,53,54,50,4,0,0,22,0,192,0,-1--1--1,,1|(811,799)|
+11,54,0,731,799,6,8,34,3,0,0,1,0,0,0,0,0,0,0,0,0
+10,55,Distributor received quantity,731,836,86,29,40,3,0,0,-1,0,0,0,0,0,0,0,0,0
+12,56,48,1358,804,10,8,0,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,57,59,50,100,0,0,22,0,192,0,-1--1--1,,1|(1098,804)|
+1,58,59,56,4,0,0,22,0,192,0,-1--1--1,,1|(1268,804)|
+11,59,0,1183,804,6,8,34,3,0,0,1,0,0,0,0,0,0,0,0,0
+10,60,Distributor distribute quantity,1183,830,60,18,40,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,61,50,59,1,0,0,0,0,192,0,-1--1--1,,1|(1059,842)|
+10,62,Distributor capacity,1433,852,65,20,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,63,Distributor planned distribute quantity,1477,972,86,43,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,64,62,60,1,0,0,0,0,192,0,-1--1--1,,1|(1313,874)|
+10,65,Distributor shipping capacity,843,1132,64,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,66,Vehicle capacity 3,618,1112,67,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,67,Distributor vehicle volume,637,1013,54,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,68,66,65,1,0,0,0,0,192,0,-1--1--1,,1|(707,1149)|
+1,69,67,65,1,0,0,0,0,192,0,-1--1--1,,1|(720,1085)|
+10,70,Distributor Customer received quantity,959,978,76,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,71,65,70,1,0,0,0,0,192,0,-1--1--1,,1|(875,1045)|
+1,72,60,70,1,0,0,0,0,192,0,-1--1--1,,1|(1078,911)|
+10,73,Distributor transport risk,1151,1075,48,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,74,60,73,1,0,0,0,0,192,0,-1--1--1,,1|(1139,943)|
+1,75,65,73,1,0,0,0,0,192,0,-1--1--1,,1|(1005,1135)|
+10,76,Distributor risk,1344,1184,53,10,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,77,Distributor inventory risk,1126,706,48,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,78,50,77,1,0,0,0,0,192,0,-1--1--1,,1|(1012,727)|
+10,79,Distributor expected inventory,1294,710,68,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,80,79,77,1,0,0,0,0,192,0,-1--1--1,,1|(1209,667)|
+10,81,Distributor inventory risk,1099,1194,53,18,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|||128-128-128,0,0,0,0,0,0
+1,82,73,76,1,0,0,0,0,192,0,-1--1--1,,1|(1226,1134)|
+1,83,81,76,1,0,0,0,0,192,0,-1--1--1,,1|(1241,1212)|
+10,84,Distributor smooth time,1710,924,45,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,85,84,63,1,0,0,0,0,192,0,-1--1--1,,1|(1629,979)|
+10,86,Manufacturer actual inventory,967,196,67,29,3,3,0,0,-1,0,0,0,0,0,0,0,0,0
+12,87,48,631,191,10,8,0,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,88,90,87,100,0,0,22,0,192,0,-1--1--1,,1|(690,191)|
+1,89,90,86,4,0,0,22,0,192,0,-1--1--1,,1|(826,191)|
+11,90,0,746,191,6,8,34,3,0,0,1,0,0,0,0,0,0,0,0,0
+10,91,Manufacturer production quantity,746,242,85,43,40,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,92,Manufacturer production capacity,640,21,84,43,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,93,Manufacturer planned production quantity,1492,364,65,43,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,94,Manufacturer shipping capacity,895,558,64,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,95,Vehicle capacity 2,633,504,67,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,96,Manufacturer vehicle volume,652,405,54,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,97,95,94,1,0,0,0,0,192,0,-1--1--1,,1|(732,556)|
+1,98,96,94,1,0,0,0,0,192,0,-1--1--1,,1|(745,493)|
+10,99,Manufacturer transport risk,1176,468,58,19,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,100,94,99,1,0,0,0,0,192,0,-1--1--1,,1|(1046,539)|
+10,101,Manufacturer production risk,1314,435,70,29,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,102,93,101,1,0,0,0,0,192,0,-1--1--1,,1|(1431,415)|
+10,103,Manufacturer risk,1359,576,48,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,104,Manufacturer inventory risk,1147,99,54,19,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,105,86,104,1,0,0,0,0,192,0,-1--1--1,,1|(1028,118)|
+10,106,Manufacturer expected inventory,1309,102,68,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,107,106,104,1,0,0,0,0,192,0,-1--1--1,,1|(1228,61)|
+10,108,Manufacturer inventory risk,1114,586,53,18,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|||128-128-128,0,0,0,0,0,0
+1,109,99,103,1,0,0,0,0,192,0,-1--1--1,,1|(1251,527)|
+1,110,108,103,1,0,0,0,0,192,0,-1--1--1,,1|(1256,604)|
+1,111,101,103,1,0,0,0,0,192,0,-1--1--1,,1|(1346,481)|
+10,112,Manufacturer smooth time,1728,316,51,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,113,112,93,1,0,0,0,0,192,0,-1--1--1,,1|(1647,371)|
+10,114,Supplier actual inventory,963,-464,67,29,3,3,0,0,-1,0,0,0,0,0,0,0,0,0
+12,115,48,627,-469,10,8,0,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,116,118,115,100,0,0,22,0,192,0,-1--1--1,,1|(686,-469)|
+1,117,118,114,4,0,0,22,0,192,0,-1--1--1,,1|(822,-469)|
+11,118,0,742,-469,6,8,34,3,0,0,1,0,0,0,0,0,0,0,0,0
+10,119,Supplier capacity,742,-443,62,18,40,3,0,0,-1,0,0,0,0,0,0,0,0,0
+12,120,48,1369,-464,10,8,0,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,121,123,114,100,0,0,22,0,192,0,-1--1--1,,1|(1109,-464)|
+1,122,123,120,4,0,0,22,0,192,0,-1--1--1,,1|(1279,-464)|
+11,123,0,1194,-464,6,8,34,3,0,0,1,0,0,0,0,0,0,0,0,0
+10,124,Supplier supply quantity,1194,-438,53,18,40,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,125,114,123,1,0,0,0,0,192,0,-1--1--1,,1|(1069,-418)|
+10,126,Supplier planned supply quantity,1448,-331,80,29,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,127,Supplier shipping capacity,854,-136,64,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,128,Vehicle capacity 1,629,-156,60,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,129,Supplier vehicle volume,648,-255,58,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,130,128,127,1,0,0,0,0,192,0,-1--1--1,,1|(718,-119)|
+1,131,129,127,1,0,0,0,0,192,0,-1--1--1,,1|(731,-183)|
+10,132,Manufacturer received quantity,1045,-234,69,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,133,127,132,1,0,0,0,0,192,0,-1--1--1,,1|(912,-225)|
+1,134,124,132,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+10,135,Supplier transport risk,1232,-209,48,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,136,124,135,1,0,0,0,0,192,0,-1--1--1,,1|(1164,-327)|
+1,137,127,135,1,0,0,0,0,192,0,-1--1--1,,1|(1075,-143)|
+10,138,Supplier risk,1355,-84,46,10,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,139,Supplier inventory risk,1137,-562,48,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,140,114,139,1,0,0,0,0,192,0,-1--1--1,,1|(1023,-541)|
+10,141,Supplier expected inventory,1305,-558,68,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,142,141,139,1,0,0,0,0,192,0,-1--1--1,,1|(1220,-601)|
+10,143,Supplier inventory risk,1110,-74,53,18,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|||128-128-128,0,0,0,0,0,0
+1,144,135,138,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+1,145,143,138,1,0,0,0,0,192,0,-1--1--1,,1|(1252,-56)|
+10,146,Supplier smooth time,1721,-344,45,18,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,147,146,126,1,0,0,0,0,192,0,-1--1--1,,1|(1641,-319)|
+1,148,20,63,1,0,0,0,0,192,0,-1--1--1,,1|(1519,1127)|
+1,149,63,93,1,0,0,0,0,192,0,-1--1--1,,1|(1618,564)|
+1,150,93,126,1,0,0,0,0,192,0,-1--1--1,,1|(1603,14)|
+10,151,Distributor distribute quantity,716,1288,71,29,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|||128-128-128,0,0,0,0,0,0
+1,152,151,12,1,0,0,0,0,192,0,-1--1--1,,1|(679,1362)|
+12,153,48,1319,196,10,8,0,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,154,156,86,100,0,0,22,0,192,0,-1--1--1,,1|(1099,196)|
+1,155,156,153,4,0,0,22,0,192,0,-1--1--1,,1|(1243,196)|
+11,156,0,1171,196,6,8,34,3,0,0,1,0,0,0,0,0,0,0,0,0
+10,157,Manufacturer supply quantity,1171,233,73,29,40,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,158,86,157,1,0,0,0,0,192,0,-1--1--1,,1|(1107,265)|
+1,159,93,157,1,0,0,0,0,192,0,-1--1--1,,1|(1265,309)|
+10,160,unit conversion,767,943,56,29,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|||128-128-128,0,0,0,0,0,0
+1,161,160,60,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+10,162,unit conversion,762,336,56,29,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|||128-128-128,0,0,0,0,0,0
+1,163,162,157,1,0,0,0,0,192,0,-1--1--1,,1|(932,267)|
+1,164,157,99,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+1,165,157,55,1,0,0,0,0,192,0,-1--1--1,,1|(912,432)|
+1,166,94,55,1,0,0,0,0,192,0,-1--1--1,,1|(863,693)|
+1,167,162,94,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+10,168,unit conversion,799,-337,56,29,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|||128-128-128,0,0,0,0,0,0
+1,169,168,124,1,0,0,0,0,192,0,-1--1--1,,1|(1015,-345)|
+1,170,126,124,1,0,0,0,0,192,0,-1--1--1,,1|(1293,-341)|
+10,171,Manufacturer production capacity,363,41,70,43,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|||128-128-128,0,0,0,0,0,0
+1,172,91,101,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+1,173,132,91,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+10,174,Average market demand,1876,1467,73,29,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,175,174,2,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+1,176,174,4,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+10,177,Time,267,-327,35,16,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|||128-128-128,0,0,0,0,0,0
+1,178,168,127,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+10,179,Inventory Adjustment,491,-412,55,29,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,180,Vehicle volume adjustment,408,-219,76,29,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,181,179,119,1,0,0,0,0,192,0,-1--1--1,,1|(632,-397)|
+1,182,180,129,1,0,0,0,0,192,0,-1--1--1,,1|(504,-277)|
+1,183,160,65,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+1,184,30,22,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+1,185,177,179,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+1,186,177,180,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+1,187,92,91,1,0,0,0,0,192,0,-1--1--1,,1|(632,123)|
+10,188,Time,1653,-487,35,16,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|||128-128-128,0,0,0,0,0,0
+1,189,188,126,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+10,190,Time,520,681,35,16,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|||128-128-128,0,0,0,0,0,0
+1,191,190,94,1,0,0,0,0,192,0,-1--1--1,,1|(702,647)|
+///---\\\
+:L<%^E!@
+1:current.vdfx
+4:Time
+5:Manufacturer shipping capacity
+9:current
+19:66,0
+24:0
+25:156
+26:156
+23:0
+15:0,0,0,0,0,0
+27:0,
+34:0,
+42:0
+72:0
+73:0
+95:0
+96:0
+97:0
+77:0
+78:0
+102:1
+93:0
+94:0
+92:0
+91:0
+90:0
+87:0
+75:
+43:
+103:8,8,8,3,8
+105:0,0,0,0,0,0,0,0,0,0
+104:Vensim Sans|12||0-0-0|0-0-0|-1--1--1|0-0-255|192-192-192|-1--1--1
